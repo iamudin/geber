@@ -1,0 +1,14 @@
+<?php
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\OtpController;
+use App\Http\Controllers\Auth\ApiBaseController;
+Route::match(['post','get','delete'],'login',ApiBaseController::class);
+Route::match(['post','get'],'wa-otp/generate',[OtpController::class,'generate']);
+Route::match(['post','get'],'wa-otp/validate',[OtpController::class,'validate']);
+Route::get('/user', function (Request $request) {
+    return $request->user();
+})->middleware('auth:sanctum');
+
+
