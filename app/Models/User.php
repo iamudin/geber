@@ -43,6 +43,9 @@ class User extends Authenticatable implements Wallet,MustVerifyEmail
      *
      * @return array<string, string>
      */
+    function data(){
+        return $this->hasOne(DataUser::class);
+    }
     protected function casts(): array
     {
         return [

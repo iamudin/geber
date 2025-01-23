@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('wallet_records', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('wallet_id')->index();
-            $table->string('source');
-            $table->timestamps();
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('email')->change()->nullable();
+            $table->string('password')->change()->nullable();
         });
     }
 
@@ -24,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('wallet_records');
+        //
     }
 };
