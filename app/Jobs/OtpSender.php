@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Contracts\WaSender;
+use App\Services\WaSender;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
