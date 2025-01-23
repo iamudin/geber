@@ -1,5 +1,4 @@
 <?php
-
 use App\Http\Middleware\WebMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -21,7 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->api(prepend: [
-            WebMiddleware::class,
+            WebMiddleware::class
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
