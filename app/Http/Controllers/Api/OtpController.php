@@ -31,7 +31,7 @@ class OtpController extends Controller
 
         if($request->isMethod('post')){
             $phonenumber = convertToInternational($request->phonenumber);
-            $otp = $request->otp;
+            $otp = $request->token;
             return (new Otp)->validate($phonenumber, $otp);
         }
 
