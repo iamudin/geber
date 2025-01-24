@@ -10,4 +10,7 @@ class DataUser extends Model
         'nama_lengkap',
         'no_hp',
     ];
+    function user(){
+        return $this->belongsTo(User::class);
+    }
 }

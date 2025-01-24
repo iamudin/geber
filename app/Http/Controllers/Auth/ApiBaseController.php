@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Api\OtpController;
 use App\Models\User;
+use App\Services\OtpService;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Api\OtpController;
 
 class ApiBaseController extends Controller
 {
@@ -18,6 +20,7 @@ class ApiBaseController extends Controller
         }
 
         if ($request->isMethod('post')) {
+        if(!$request->verify_otp){
             $validator = Validator::make($request->all(), [
                 'phonenumber' => ['required', 'regex:/^08[0-9]{9,11}$/'],
                 'fullname' => 'required|string|max:255',
@@ -33,27 +36,50 @@ class ApiBaseController extends Controller
 
             $phonenumber = $request->phonenumber;
             $fullname = $request->fullname;
-
             try {
-                $userExists = User::whereHas('data', fn($q) => $q->whereNoHp($phonenumber))->exists();
+            $userExists = User::whereHas('data', fn($q) => $q->whereNoHp($phonenumber))->exists();
+            if ($userExists) {
+                return response()->json(['status' => false, 'message' => 'Nomor telah terdaftar']);
+            }
+            (new OtpService)->generate($phonenumber);
+            Cache::put('register_data_'.$phonenumber,['phonenumber'=>$phonenumber,'fullname'=>$fullname]);
+                return response()->json(['status' => true, 'message' => 'Lanjutkan Verifikasi OTP']);
+        }catch (\Exception $error) {
+            return response()->json(['status' => false, 'message' => $error->getMessage()]);
+        }
 
-                if ($userExists) {
-                    return response()->json(['status' => false, 'message' => 'Nomor telah terdaftar']);
+        }else{
+
+            if($session = Cache::get('register_data_'.$request->phonenumber)){
+                $cekotp = (new OtpService)->validate($session['phonenumber'],$request->verify_otp);
+                if($cekotp->status === false){
+                    return $cekotp;
                 }
 
-                $user = User::create(['name' => $fullname])
+            try {
+                $user = User::create(['name' => $session['fullname']])
                     ->data()
-                    ->create(['nama_lengkap' => $fullname, 'no_hp' => $phonenumber]);
+                    ->create(['nama_lengkap' => $session['fullname'], 'no_hp' => $session['phonenumber']]);
+                        $token = $user->user->createToken('auth_token')->plainTextToken;
+                        Cache::forget('register_data_'.$request->phonenumber);
+                        return response()->json([
+                            'status' => true,
+                            'message' => 'Login berhasil',
+                            'user' => $user->user,
+                            'token' => $token,
+                        ], 201);
 
-                (new OtpController)->generateOtp($request);
-
-                return response()->json(['status' => true, 'message' => 'Pendaftaran Berhasil, Masukkan kode OTP untuk lanjutkan login']);
             } catch (\Exception $error) {
                 return response()->json(['status' => false, 'message' => $error->getMessage()]);
             }
+        }else{
+        return response()->json(['status' => false, 'message' => 'Isi formulir registrasi terlebih dahulu']);
+
+        }
+    }
+
         }
 
-        return response()->json(['status' => false, 'message' => 'Method not allowed']);
     }
 
     public function login(Request $request)
@@ -65,7 +91,7 @@ class ApiBaseController extends Controller
         if ($request->isMethod('post')) {
             $validator = Validator::make($request->all(), [
                 'phonenumber' => ['required', 'regex:/^08[0-9]{9,11}$/'],
-                'token' => 'nullable|string',
+                'verify_otp' => 'nullable|numeric',
             ], [
                 'phonenumber.required' => 'Nomor HP wajib diisi.',
                 'phonenumber.regex' => 'Format nomor HP tidak valid. Nomor harus diawali dengan 08 dan memiliki panjang 11-13 digit.',
@@ -81,12 +107,10 @@ class ApiBaseController extends Controller
                 $user = User::whereHas('data', fn($q) => $q->whereNoHp($phonenumber))->first();
 
                 if ($user) {
-                    if ($request->token) {
-                        $login = (new OtpController)->validate($request);
-
+                    if ($request->verify_otp) {
+                        $login = (new OtpService)->validate($phonenumber,$request->verify_otp);
                         if ($login->status === true) {
                             $token = $user->createToken('auth_token')->plainTextToken;
-
                             return response()->json([
                                 'status' => true,
                                 'message' => 'Login berhasil',
@@ -98,16 +122,13 @@ class ApiBaseController extends Controller
                         return $login;
                     }
 
-                    $cacheKey = 'otp_api_' . $phonenumber;
+                    $cacheKey = 'otp_' . $phonenumber;
 
                     if (Cache::has($cacheKey)) {
                         return response()->json(['status' => false, 'message' => 'OTP telah dikirim, silakan coba lagi setelah 30 detik.']);
                     }
-
-                    (new OtpController)->generateOtp($request);
-
+                    (new OtpService)->generate($phonenumber);
                     Cache::put($cacheKey, true, 30);
-
                     return response()->json(['status' => true, 'message' => 'Nomor Terdaftar, Masukkan Kode OTP']);
                 }
 
