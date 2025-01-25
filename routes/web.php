@@ -10,7 +10,7 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 Route::get('/email/verify/{id}/{hash}', [WebBaseController::class,'verifyEmail'])->name('verification.verify');
 Route::get('/', function () {
-    return view('welcome');
+    return view('cooming');
 });
 Route::get('/verify', function (Request $request) {
     $user = User::find(1);
