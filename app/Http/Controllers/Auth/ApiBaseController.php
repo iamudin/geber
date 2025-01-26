@@ -3,8 +3,12 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Models\User;
+use App\Jobs\OtpSender;
+use Illuminate\Support\Str;
 use App\Services\OtpService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Session;
@@ -90,6 +94,7 @@ class ApiBaseController extends Controller
         }
 
         if ($request->isMethod('post')) {
+
             $validator = Validator::make($request->all(), [
                 'phonenumber' => ['required', 'regex:/^08[0-9]{9,11}$/'],
                 'verify_otp' => 'nullable|numeric|digits:6',
@@ -144,7 +149,12 @@ class ApiBaseController extends Controller
 
                 return response()->json(['error' => 'Nomor pengguna tidak ditemukan'],404);
             } catch (\Exception $error) {
-                return response()->json(['status' => false, 'message' => $error->getMessage()]);
+                $reqId = Str::uuid()->toString();
+                $reqPath = URL::current();
+                $reqIp = $request->ip();
+                Log::warning($reqId.' | '.$reqPath.' | '.$reqIp.' | '.$error->getMessage(), []);
+
+                return response()->json(['error' => 'Something Error, Contact Provider.','requestId' => $reqId],500);
             }
         }
     }

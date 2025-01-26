@@ -3,9 +3,8 @@
 namespace App\Services;
 use Ichtrojan\Otp\Otp;
 use App\Jobs\OtpSender;
-use App\Http\Controllers\Controller;
 
-class OtpService extends Controller
+class OtpService
 {
 
     function generate($indetifier){
