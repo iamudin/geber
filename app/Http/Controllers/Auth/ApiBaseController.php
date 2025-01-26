@@ -23,15 +23,16 @@ class ApiBaseController extends Controller
         if(!$request->verify_otp){
             $validator = Validator::make($request->all(), [
                 'phonenumber' => ['required', 'regex:/^08[0-9]{9,11}$/'],
-                'fullname' => 'required|string|max:255',
+                'fullname' => ['required','regex:/^[a-zA-Z\s]+$/','max:255'],
             ], [
                 'phonenumber.required' => 'Nomor HP wajib diisi.',
                 'phonenumber.regex' => 'Format nomor HP tidak valid. Nomor harus diawali dengan 08 dan memiliki panjang 11-13 digit.',
                 'fullname.required' => 'Nama lengkap wajib diisi.',
+                'fullname.regex' => 'Nama lengkap hanya boleh huruf dan spasi',
             ]);
 
             if ($validator->fails()) {
-                return response()->json(['status' => false, 'message' => $validator->errors()->first()]);
+                return response()->json(['errors' => $validator->errors()],400);
             }
 
             $phonenumber = $request->phonenumber;
@@ -39,11 +40,11 @@ class ApiBaseController extends Controller
             try {
             $userExists = User::whereHas('data', fn($q) => $q->whereNoHp($phonenumber))->exists();
             if ($userExists) {
-                return response()->json(['status' => false, 'message' => 'Nomor telah terdaftar']);
+                return response()->json([ 'error' => 'Nomor '.$phonenumber.' telah terdaftar di sistem'],409);
             }
             (new OtpService)->generate($phonenumber);
             Cache::put('register_data_'.$phonenumber,['phonenumber'=>$phonenumber,'fullname'=>$fullname]);
-                return response()->json(['status' => true, 'message' => 'Lanjutkan Verifikasi OTP']);
+                return response()->json(['success' => 'Nama dan Nomor HP valid, Lanjutkan Verifikasi OTP'],202);
         }catch (\Exception $error) {
             return response()->json(['status' => false, 'message' => $error->getMessage()]);
         }
@@ -70,10 +71,10 @@ class ApiBaseController extends Controller
                         ], 201);
 
             } catch (\Exception $error) {
-                return response()->json(['status' => false, 'message' => $error->getMessage()]);
+                return response()->json(['error' => $error->getMessage()]);
             }
         }else{
-        return response()->json(['status' => false, 'message' => 'Isi formulir registrasi terlebih dahulu']);
+        return response()->json(['error' => 'Isi formulir registrasi terlebih dahulu'],400);
 
         }
     }
@@ -91,14 +92,14 @@ class ApiBaseController extends Controller
         if ($request->isMethod('post')) {
             $validator = Validator::make($request->all(), [
                 'phonenumber' => ['required', 'regex:/^08[0-9]{9,11}$/'],
-                'verify_otp' => 'nullable|numeric',
+                'verify_otp' => 'nullable|numeric|digits:6',
             ], [
                 'phonenumber.required' => 'Nomor HP wajib diisi.',
                 'phonenumber.regex' => 'Format nomor HP tidak valid. Nomor harus diawali dengan 08 dan memiliki panjang 11-13 digit.',
             ]);
 
             if ($validator->fails()) {
-                return response()->json(['status' => false, 'message' => $validator->errors()->first()]);
+                return response()->json(['error' => $validator->errors()],400);
             }
 
             $phonenumber = $request->phonenumber;
@@ -107,16 +108,25 @@ class ApiBaseController extends Controller
                 $user = User::whereHas('data', fn($q) => $q->whereNoHp($phonenumber))->first();
 
                 if ($user) {
+
+                    if($active = $user->activeToken()){
+                        return response()->json(['error'=>'Akun dengan nomor '.$phonenumber.' sudah aktif di perangkat lain pada '.$active->last_used_at],409);
+
+                    }
                     if ($request->verify_otp) {
                         $login = (new OtpService)->validate($phonenumber,$request->verify_otp);
                         if ($login->status === true) {
+                            $user->tokens->each(function ($token) {
+                                $token->delete();
+                            });
+
+                            $user = User::find($user->id);
                             $token = $user->createToken('auth_token')->plainTextToken;
                             return response()->json([
-                                'status' => true,
-                                'message' => 'Login berhasil',
-                                'user' => $user,
-                                'token' => $token,
+                                'data' => array_merge($user->toArray(),['token' => $token]),
                             ], 201);
+                        }else{
+                            return response()->json(['error'=>$login->message],401);
                         }
 
                         return $login;
@@ -125,14 +135,14 @@ class ApiBaseController extends Controller
                     $cacheKey = 'otp_' . $phonenumber;
 
                     if (Cache::has($cacheKey)) {
-                        return response()->json(['status' => false, 'message' => 'OTP telah dikirim, silakan coba lagi setelah 30 detik.']);
+                        return response()->json(['error' =>'Terlalu banyak permintaan OTP, Tunggu beberpa detik lagi'],429);
                     }
                     (new OtpService)->generate($phonenumber);
                     Cache::put($cacheKey, true, 30);
-                    return response()->json(['status' => true, 'message' => 'Nomor Terdaftar, Masukkan Kode OTP']);
+                    return response()->json(['success' => 'Nomor Valid, silahkan input kode OTP'],202);
                 }
 
-                return response()->json(['status' => false, 'message' => 'User Tidak Valid']);
+                return response()->json(['error' => 'Nomor pengguna tidak ditemukan'],404);
             } catch (\Exception $error) {
                 return response()->json(['status' => false, 'message' => $error->getMessage()]);
             }

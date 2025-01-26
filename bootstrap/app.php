@@ -1,6 +1,13 @@
 <?php
+
+use Illuminate\Http\Request;
+use Laravel\Sanctum\Sanctum;
+use App\Http\Middleware\ApiMiddleware;
 use App\Http\Middleware\WebMiddleware;
 use Illuminate\Foundation\Application;
+use App\Http\Middleware\SanctumMiddleware;
+use Illuminate\Auth\AuthenticationException;
+use App\Http\Middleware\SanctumAuthMiddleware;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 
@@ -20,9 +27,18 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->api(prepend: [
-            WebMiddleware::class
+            ApiMiddleware::class
         ]);
     })
-    ->withExceptions(function (Exceptions $exceptions) {
-        //
-    })->create();
+  ->withExceptions(function (Exceptions $exceptions) {
+
+})
+->withExceptions(function (Exceptions $exceptions) {
+    $exceptions->render(function (AuthenticationException $e, Request $request) {
+        if($request->getHost()==api_url()){
+            return response()->json(['error'=>'Unauthorized'],401);
+        }
+
+    });
+})
+->create();

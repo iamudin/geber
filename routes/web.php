@@ -16,7 +16,7 @@ Route::get('/verify', function (Request $request) {
     $user = User::find(1);
     $user->notify(new App\Http\Controllers\Auth\VerifyEmail);
 
-});
+})->middleware('auth');
 
 Route::get('/login', function (Request $request) {
  return 'login form';

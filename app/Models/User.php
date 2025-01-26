@@ -46,6 +46,10 @@ class User extends Authenticatable implements Wallet,MustVerifyEmail
     function data(){
         return $this->hasOne(DataUser::class);
     }
+
+    function activeToken(){
+        return $this->tokens->where('expires_at','==',null)->sortByDesc('id')->first();
+    }
     protected function casts(): array
     {
         return [
