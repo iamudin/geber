@@ -38,14 +38,14 @@ function store(Request $request){
         'mime_type'=>['image/png','image/jpeg']
        ]);
     }
-    if($request->hasFile('foto_lokasi_produksi')){
+    if($request->foto_lokasi_produksi){
         $supplier->addFile([
             'file'=>$request->file('foto_lokasi_produksi'),
             'purpose'=>'foto_lokasi_produksi',
             'mime_type'=>['image/png','image/jpeg']
            ]);
     }
-    if($request->hasFile('foto_gudang')){
+    if($request->foto_gudang){
         $supplier->addFile([
             'file'=>$request->file('foto_gudang'),
             'purpose'=>'foto_gudang',
