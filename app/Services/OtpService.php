@@ -7,9 +7,9 @@ use App\Jobs\OtpSender;
 class OtpService
 {
 
-    function generate($indetifier){
+    function generate($indetifier,$length=6,$validity=5){
         $phonenumber = convertToInternational($indetifier);
-        $genereate_token = (new Otp)->generate($phonenumber, 'numeric', config('geber.otp.length'), config('geber.otp.validity'));
+        $genereate_token = (new Otp)->generate($phonenumber, 'numeric', $length, $validity);
         OtpSender::dispatch($phonenumber,$genereate_token->token)->onQueue('default');
 
     }

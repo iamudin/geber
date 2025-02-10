@@ -96,6 +96,21 @@ function api_url($path=null){
    return parse_url(config('geber.api_url'), PHP_URL_HOST).$path??'';
 }
 }
+if (!function_exists('storage_url')) {
+    function storage_url($path=null){
+       return parse_url(config('geber.storage_url'), PHP_URL_HOST).$path??'';
+    }
+}
+if (!function_exists('main_url')) {
+    function main_url($path=null){
+       return parse_url(config('app.url'), PHP_URL_HOST).$path??'';
+    }
+    }
+if (!function_exists('member_url')) {
+    function member_url($path=null){
+       return parse_url(config('geber.member_url'), PHP_URL_HOST).$path??'';
+}
+   }
 if (!function_exists('send_whatsapp')) {
     function send_whatsapp($arr){
        if(!is_array($arr)){

@@ -5,6 +5,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\Verified;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 class WebBaseController extends Controller
@@ -33,5 +34,18 @@ class WebBaseController extends Controller
         }
 
         return "email Berhasil verifikasi";
+    }
+    function dashboard(Request $request){
+
+        // return to_route('home');
+    }
+    public function cross_login($session){
+        $user = User::whereActiveSession($session)->first();
+        if($user){
+            Auth::login($user);
+            return to_route('member.home');
+        }
+        return to_route('home');
+
     }
 }

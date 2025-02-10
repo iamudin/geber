@@ -1,24 +1,22 @@
 <?php
-
-use App\Models\User;
-use Ichtrojan\Otp\Otp;
-use App\Jobs\OtpSender;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\WebBaseController;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use App\Http\Middleware\FilesMiddleware;
+use App\Http\Controllers\FileManagerController;
 
-Route::get('/email/verify/{id}/{hash}', [WebBaseController::class,'verifyEmail'])->name('verification.verify');
-Route::get('/', function () {
-    return view('cooming');
-});
-Route::get('/verify', function (Request $request) {
-    $user = User::find(1);
-    $user->notify(new App\Http\Controllers\Auth\VerifyEmail);
 
-})->middleware('auth');
-
-Route::get('/login', function (Request $request) {
- return 'login form';
-})->name('login');
-
+require __DIR__.'/auth.php';
+require __DIR__.'/admin.php';
+require __DIR__.'/member.php';
+Route::match(['post','get'],'media/destroy', [FileManagerController::class, 'destroy'])->name('media.destroy');
+Route::match(['post','get'], 'media/upload', [FileManagerController::class, 'upload'])->name('media.upload');
+Route::middleware(FilesMiddleware::class)->match(['post', 'get'], 'media/{slug}', [FileManagerController::class, 'stream_by_id'])
+    ->where('slug', '(?!' . implode('|', ['destroy', 'upload']) . ')[a-zA-Z0-9-]+(\.('.implode('|', flc_ext()).'))$')->name('stream');
+if(app()->environment('production')){
+    Route::get('/', [App\Http\Controllers\HomeController::class,'index'])->name('home');
+}else{
+    Route::get('/', function () {
+        return view('cooming');
+    })->name('home');
+}
+Route::get('/supplier', [App\Http\Controllers\Api\SupplierController::class,'detail']);
+// Route::get('/dashboard', [App\Http\Controllers\Auth\WebBaseController::class,'dashboard'])->name('dashboard');

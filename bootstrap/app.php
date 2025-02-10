@@ -5,6 +5,7 @@ use Laravel\Sanctum\Sanctum;
 use App\Http\Middleware\ApiMiddleware;
 use App\Http\Middleware\WebMiddleware;
 use Illuminate\Foundation\Application;
+use App\Http\Middleware\CorsMiddleware;
 use App\Http\Middleware\SanctumMiddleware;
 use Illuminate\Auth\AuthenticationException;
 use App\Http\Middleware\SanctumAuthMiddleware;
@@ -23,7 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
         //     'panel' => Panel::class
         // ]);
         $middleware->web(append: [
-            WebMiddleware::class,
+            WebMiddleware::class
         ]);
 
         $middleware->api(prepend: [
