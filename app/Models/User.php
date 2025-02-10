@@ -47,7 +47,7 @@ class User extends Authenticatable implements Wallet,MustVerifyEmail
         return $this->hasOne(DataUser::class);
     }
     function isSupplier(){
-        return $this->supplier->exists();
+        return $this->supplier->count();
     }
     function isAffiliator(){
         // return $this->supplier->exists();
