@@ -53,7 +53,7 @@ trait Fileable
             'file_name' => $upload->name,
             'file_size' => Storage::size($upload->path),
             'purpose' => $purpose,
-            'host' => request()->getHttpHost(),
+            'host' => storage_url(),
             'child_id' => $childId,
         ];
         if($self_upload){
@@ -87,7 +87,7 @@ catch(\Exception $e){
         $datePath = Carbon::now()->format('Y/m/d');
 
         // Tentukan direktori penyimpanan berdasarkan tanggal
-        $directory = request()->getHttpHost()."/{$datePath}";
+        $directory = $datePath;
 
         // Buat nama file baru yang di-*slug* dan ditambahkan dengan string acak
         $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
