@@ -65,16 +65,6 @@ trait Fileable
         }else{
             $file = $this->files()->create($data);
         }
-        Cache::rememberForever("media_{$file->file_name}", function () use ($file) {
-            return json_decode(json_encode([
-                'file_path' => $file->file_path,
-                'file_type' => $file->file_type,
-                'file_host' => $file->host,
-                'file_auth' => $file->file_auth,
-                'file_size' => $file->file_size,
-            ]));
-        });
-        return '/media/'.$upload->name;
     }
 catch(\Exception $e){
 
@@ -136,7 +126,6 @@ catch(\Exception $e){
         }
         $existingFile = $query->first();
         if ($existingFile) {
-            Cache::forget('media_'.$existingFile->file_name);
             $existingFile->deleteFile(); // Menghapus file dari storage dan record dari database
         }
     }
