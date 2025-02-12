@@ -16,7 +16,7 @@ class Supplier extends Model
     public function getPhotoAttribute()
     {
         return json_decode(json_encode(collect($this->files)->mapWithKeys(function ($file) {
-            return [$file['purpose'] => 'https://'.$file['host'] . $file['file_path']];
+            return [$file['purpose'] => 'https://'.$file['host'] .'/'. $file['file_path']];
         })));
     }
     public function getFotoDisplayProdukAttribute()
