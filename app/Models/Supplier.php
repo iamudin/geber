@@ -13,13 +13,16 @@ class Supplier extends Model
     public function user(){
         return $this->belongsTo(User::class);
     }
-
+    public function getPhotoAttribute()
+    {
+        return json_decode(json_encode(collect($this->files)->pluck('file_path','purpose')));
+    }
     public function getFotoDisplayProdukAttribute()
     {
         return $this->files
             ->filter(fn($file) => str_starts_with($file->purpose, 'foto-display-produk'))
             ->map(fn($file) => [
-                'photo' => 'https://'.storage_url('media/'.$file->file_name), // Misalnya ada kolom URL
+                'photo' => 'https://'.storage_url(''.$file->file_path), // Misalnya ada kolom URL
             ]);
     }
 

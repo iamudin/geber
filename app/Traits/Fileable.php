@@ -24,7 +24,7 @@ trait Fileable
             return null;
         }
         $file = isset($source['file']) &&  is_file($source['file']) ? $source['file'] : null;
-        $purpose = isset($source['purpose']) && is_string($source['purpose']) && strlen($source['purpose']) > 0 ? str($source['purpose'])->slug() : null;
+        $purpose = isset($source['purpose']) && is_string($source['purpose']) && strlen($source['purpose']) > 0 ? str_replace('-','_',str($source['purpose'])->slug()) : null;
         $childId = isset($source['child_id']) && (is_string($source['child_id']) || is_numeric($source['child_id'])) && strlen($source['child_id'])>0 ? $source['child_id'] : null;
         $auth = isset($source['auth']) && is_numeric($source['auth']) ? $source['auth'] : null;
         $mime = isset($source['mime_type']) && is_array($source['mime_type']) && $this->is_mime_type($source['mime_type'])? $source['mime_type'] : null;
