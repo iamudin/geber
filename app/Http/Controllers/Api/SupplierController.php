@@ -11,7 +11,12 @@ class SupplierController extends Controller
     function profile(Request $request){
         $user = $request->user();
         if($user->isSupplier()){
-            $data[] = $user->load('supplier.files');
+            $data = $user->load('supplier.files');
+            $supplier = collect($data->supplier)->except('files');
+            return response()->json([
+                'data' => $supplier->merge(['photo' => $data->supplier->photo])
+            ], 200);
+
         }
         return response()->json(['error'=>'Anda belum menjadi supplier'],404);
     }
