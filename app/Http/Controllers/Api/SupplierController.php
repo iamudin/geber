@@ -42,6 +42,13 @@ function register(Request $request){
         'mime_type'=>['image/png','image/jpeg']
        ]);
     }
+    if($request->file_nib){
+        $supplier->addFile([
+         'file'=>$request->file('file_nib'),
+         'purpose'=>'file_nib',
+         'mime_type'=>['image/png','image/jpeg','application/pdf']
+        ]);
+     }
     if($request->foto_lokasi_produksi){
         $supplier->addFile([
             'file'=>$request->file('foto_lokasi_produksi'),
