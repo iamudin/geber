@@ -78,7 +78,11 @@ catch(\Exception $e){
 
         // Tentukan direktori penyimpanan berdasarkan tanggal
         $directory = $datePath;
-
+        $storage = Storage::path($datePath);
+        if (!file_exists($storage)) {
+            mkdir($storage, 0755, true);
+            chmod($storage, 0755);
+        }
         // Buat nama file baru yang di-*slug* dan ditambahkan dengan string acak
         $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
         $sluggedName = str($originalName)->slug();
