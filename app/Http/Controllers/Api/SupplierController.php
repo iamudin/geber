@@ -8,15 +8,14 @@ use Illuminate\Support\Facades\Blade;
 
 class SupplierController extends Controller
 {
-    function detail(){
-        $data = Supplier::find(2);
-        $gambar = $data->getFirstMediaUrl('foto_depan_tempat_usaha', 'thumfgb');
-        $template = '<img src="{{$gambar}}">';
-        $html = Blade::render($template, ['gambar' => $gambar]);
-
-        return response($html);
+    function profile(Request $request){
+        $user = $request->user();
+        if($user->isSupplier()){
+            $data[] = $user->load('supplier.files');
+        }
+        return response()->json(['error'=>'Anda belum menjadi supplier'],404);
     }
-function store(Request $request){
+function register(Request $request){
     $data = $request->user();
     $validator = $request->validate([
         'name'=> ['required','string'],
