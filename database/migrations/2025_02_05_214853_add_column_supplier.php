@@ -12,7 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('suppliers', function (Blueprint $table) {
-            $table->id();
             $table->string('status')->default('Menunggu Verifikasi');
         });
     }
