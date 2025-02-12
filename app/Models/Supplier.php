@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Supplier extends Model
 {
     use HasFactory,Fileable;
-    protected $fillable = ['name','description','address','type','nib'];
+    protected $fillable = ['name','description','address','type','nib','status'];
 
     public function user(){
         return $this->belongsTo(User::class);
