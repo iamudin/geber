@@ -24,6 +24,7 @@ trait Fileable
             return null;
         }
         $file = isset($source['file']) &&  is_file($source['file']) ? $source['file'] : null;
+        $collection = isset($source['collection']) &&  in_array($source['collection'],['single','multiple']) ? $source['collection'] : 'single';
         $purpose = isset($source['purpose']) && is_string($source['purpose']) && strlen($source['purpose']) > 0 ? str_replace('-','_',str($source['purpose'])->slug()) : null;
         $childId = isset($source['child_id']) && (is_string($source['child_id']) || is_numeric($source['child_id'])) && strlen($source['child_id'])>0 ? $source['child_id'] : null;
         $auth = isset($source['auth']) && is_numeric($source['auth']) ? $source['auth'] : null;
@@ -42,7 +43,7 @@ trait Fileable
         }
         try{
 
-        $this->removeFileByPurposeAndChild($purpose, $childId,$self_upload);
+        $this->removeFileByPurposeAndChild($purpose, $childId,$collection,$self_upload);
         $upload = $this->handleFileUpload($file,$width,$height);
         $mimeType = $file->getMimeType();
         $data = [
@@ -50,6 +51,7 @@ trait Fileable
             'file_path' => $upload->path,
             'file_type' => $mimeType,
             'file_auth' => $auth,
+            'collection' => $collection,
             'file_name' => $upload->name,
             'file_size' => Storage::size($upload->path),
             'purpose' => $purpose,
@@ -84,12 +86,9 @@ catch(\Exception $e){
             chmod($storage, 0755);
         }
         // Buat nama file baru yang di-*slug* dan ditambahkan dengan string acak
-        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-        $sluggedName = str($originalName)->slug();
-        $fileName = $sluggedName.'.' . $file->getClientOriginalExtension();
-        if(File::whereFileName($sluggedName.'.' . $file->getClientOriginalExtension())->exists()){
-            $fileName = $sluggedName . '-' . str()->random(4) . '.' . $file->getClientOriginalExtension();
-        }
+
+        $fileName = Str::uuid().'.' . $file->getClientOriginalExtension();
+
         // Cek apakah file adalah gambar
         if (str_starts_with($file->getMimeType(), 'image/')) {
             // Kompres gambar menggunakan Intervention Image
@@ -116,20 +115,19 @@ catch(\Exception $e){
     }
 
 
-    public function removeFileByPurposeAndChild($purpose, $childId = null,$self_upload=false)
+    public function removeFileByPurposeAndChild($purpose, $childId = null,$collection='single',$self_upload=false)
     {
         if($self_upload){
             $query = $this->where('purpose', $purpose);
         }else{
             $query = $this->files()->where('purpose', $purpose);
-
         }
 
         if ($childId !== null) {
             $query->where('child_id', $childId);
         }
         $existingFile = $query->first();
-        if ($existingFile) {
+        if ($existingFile && $collection!='multiple') {
             $existingFile->deleteFile(); // Menghapus file dari storage dan record dari database
         }
     }

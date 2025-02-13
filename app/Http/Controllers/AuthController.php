@@ -40,7 +40,7 @@ class AuthController extends Controller
                             $user->update([
                                 'active_session'=>session()->getId()
                             ]);
-                            return to_route('member.login',session()->getId());
+                            return to_route('member.dashboard');
                         }else{
                             return back()->with('message',
                             ['phonenumber'=>$phonenumber,'message'=>$login->message]);

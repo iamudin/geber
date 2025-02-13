@@ -15,9 +15,18 @@ class Supplier extends Model
     }
     public function getPhotoAttribute()
     {
-        return json_decode(json_encode(collect($this->files)->mapWithKeys(function ($file) {
-            return [$file['purpose'] => 'https://'.$file['host'] .'/'. $file['file_path']];
-        })));
+        $files = collect($this->files);
+
+        return $files->groupBy('purpose')->map(function ($group) {
+            // Ambil nilai type dari salah satu file dalam grup (karena semua harus sama)
+            $type = $group->first()['collection'];
+
+            // Buat daftar URL
+            $urls = $group->map(fn($file) => 'https://' . storage_url(). '/' . $file['file_path'])->toArray();
+
+            // Jika type adalah 'single', kembalikan string, jika 'multiple', kembalikan array
+            return $type === 'single' ? $urls[0] : $urls;
+        })->toArray();
     }
     public function getFotoDisplayProdukAttribute()
     {

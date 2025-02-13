@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 class File extends Model
 {
     use Fileable;
-    protected $fillable = ['file_path', 'file_type','file_auth','file_name','file_size','purpose','child_id','user_id','host','file_hits'];
+    protected $fillable = ['file_path', 'file_type','file_auth','file_name','file_size','purpose','child_id','user_id','host','file_hits','collection'];
     protected $casts = ['created_at'=>'datetime'];
 
     public function fileable()

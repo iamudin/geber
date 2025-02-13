@@ -13,7 +13,7 @@ class FileManagerController extends Controller implements HasMiddleware
 {
     public static function middleware(): array {
         return [
-            new Middleware('auth',only: ['upload','destroy'])
+            new Middleware('auth', ['upload','destroy'])
         ];
     }
 
@@ -44,7 +44,6 @@ class FileManagerController extends Controller implements HasMiddleware
             $media = $request->media;
             $data = File::whereFileName(basename($media))->first();
             if($data){
-                Cache::forget("media_".basename($media));
                 Storage::delete($data->file_path);
                 $data->forceDelete();
             }

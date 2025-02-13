@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\FileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\UserController;
@@ -13,6 +14,7 @@ Route::middleware(['auth:sanctum'])->group(function(){
         Route::post('register',[SupplierController::class,'register']);
         Route::get('profile',[SupplierController::class,'profile']);
     });
+    Route::match(['post','get'],'file/destroy', [FileController::class, 'destroy']);
     Route::post('user/logout',[UserController::class,'logout']);
 });
 

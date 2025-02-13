@@ -67,7 +67,8 @@ function register(Request $request){
         foreach($request->foto_display_produk as $key=>$foto){
             $supplier->addFile([
                 'file'=>$foto,
-                'purpose'=>'foto_display_produk-'.$key+1,
+                'purpose'=>'foto_display_produk',
+                'collection'=>'multiple',
                 'mime_type'=>['image/png','image/jpeg']
                ]);
         }

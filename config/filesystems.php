@@ -32,7 +32,7 @@ return [
 
         'local' => [
             'driver' => 'local',
-            'root' => storage_path('app/private'),
+            'root' => base_path().'/../gambargeber',
             'serve' => true,
             'throw' => false,
             'report' => false,
@@ -74,7 +74,7 @@ return [
     */
 
     'links' => [
-        public_path('image') => base_path().'/../gambargeber',
+        public_path('image') => storage_path('app/private'),
     ],
 
 ];
