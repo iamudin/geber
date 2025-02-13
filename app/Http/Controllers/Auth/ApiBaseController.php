@@ -62,7 +62,7 @@ class ApiBaseController extends Controller
                 }
 
             try {
-                $user = User::create(['name' => $session['fullname']])
+                $user = User::create(['name' => $session['fullname'],'role','member'])
                     ->data()
                     ->create(['nama_lengkap' => $session['fullname'], 'no_hp' => $session['phonenumber']]);
                         $token = $user->user->createToken('auth_token')->plainTextToken;

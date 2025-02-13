@@ -24,6 +24,7 @@ class User extends Authenticatable implements Wallet,MustVerifyEmail
     protected $fillable = [
         'name',
         'email',
+        'role',
         'password',
         'active_session'
     ];
