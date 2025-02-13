@@ -77,15 +77,15 @@ class AuthController extends Controller
         if($type==null){
             if($request->isMethod('post')){
                 $validate = $request->validate([
-                    'username' => 'required',
-                    'password' => 'password',
+                    'email' => 'required',
+                    'password' => 'required',
                 ]);
 
-                if (Auth::attempt($this->validate())) {
+                if (Auth::attempt($validate)) {
                     if(Auth::user()->isAdmin()){
                         return to_route('admin.dashboard');
                     }elseif(Auth::user()->isMember()){
-                        return to_route('home');
+                        return to_route('member.dashboard');
                     }
                 }
                 throw ValidationException::withMessages([
